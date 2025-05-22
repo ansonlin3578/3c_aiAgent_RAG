@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3C產品電商 AI 助手</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+        }
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #1976d2;
+        }
+        .status {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .error {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>3C產品電商 AI 助手</h1>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="請輸入您的問題..." />
+            <button onclick="sendMessage()">發送</button>
+        </div>
+        <div class="status" id="status">連接狀態: 未連接</div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        const clientId = 'user_' + Math.random().toString(36).substr(2, 9);
+        
+        function connect() {
+            try {
+                ws = new WebSocket(`ws://localhost:8000/ws/${clientId}`);
+                
+                ws.onopen = () => {
+                    document.getElementById('status').textContent = '連接狀態: 已連接';
+                    addMessage('系統', '已連接到AI助手，請開始對話。', 'bot');
+                    document.getElementById('error').textContent = '';
+                };
+                
+                ws.onclose = (event) => {
+                    document.getElementById('status').textContent = '連接狀態: 已斷開';
+                    document.getElementById('error').textContent = `連接已關閉: ${event.code} ${event.reason}`;
+                    setTimeout(connect, 1000);
+                };
+                
+                ws.onerror = (error) => {
+                    console.error('WebSocket錯誤:', error);
+                    document.getElementById('error').textContent = 'WebSocket連接錯誤';
+                };
+                
+                ws.onmessage = (event) => {
+                    console.log('收到消息:', event.data);
+                    try {
+                        const response = JSON.parse(event.data);
+                        if (response.type === 'response') {
+                            if (response.status === 'success') {
+                                addMessage('AI助手', response.content, 'bot');
+                            } else {
+                                addMessage('系統', `錯誤: ${response.error}`, 'bot');
+                            }
+                        }
+                    } catch (e) {
+                        console.error('解析消息錯誤:', e);
+                        document.getElementById('error').textContent = '解析消息時發生錯誤';
+                    }
+                };
+            } catch (error) {
+                console.error('創建WebSocket連接錯誤:', error);
+                document.getElementById('error').textContent = '創建WebSocket連接時發生錯誤';
+            }
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (message && ws && ws.readyState === WebSocket.OPEN) {
+                console.log('發送消息:', message);
+                addMessage('我', message, 'user');
+                ws.send(JSON.stringify({
+                    type: 'chat',
+                    content: message
+                }));
+                input.value = '';
+            } else {
+                document.getElementById('error').textContent = '無法發送消息：WebSocket未連接';
+            }
+        }
+        
+        function addMessage(sender, text, type) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // 按Enter發送消息
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 初始連接
+        connect();
+    </script>
+</body>
+</html> 

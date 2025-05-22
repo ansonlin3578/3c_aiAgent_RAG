@@ -1,0 +1,54 @@
+{
+    "products": [
+        {
+            "id": "P001",
+            "name": "iPhone 15 Pro",
+            "category": "手機",
+            "price": 35900,
+            "specs": {
+                "processor": "A17 Pro",
+                "ram": "8GB",
+                "storage": "256GB",
+                "display": "6.1吋 Super Retina XDR",
+                "camera": "4800萬像素主相機",
+                "battery": "3650mAh"
+            },
+            "description": "iPhone 15 Pro 採用鈦金屬設計，搭載 A17 Pro 晶片，提供卓越的性能和攝影體驗。",
+            "warranty": "1年全球保固",
+            "stock": 50
+        },
+        {
+            "id": "P002",
+            "name": "MacBook Pro 14",
+            "category": "筆記型電腦",
+            "price": 49900,
+            "specs": {
+                "processor": "M3 Pro",
+                "ram": "16GB",
+                "storage": "512GB SSD",
+                "display": "14.2吋 Liquid Retina XDR",
+                "battery": "70瓦時",
+                "ports": "HDMI, SDXC, MagSafe 3, Thunderbolt 4"
+            },
+            "description": "MacBook Pro 14 搭載 M3 Pro 晶片，提供強大的性能和出色的電池續航力。",
+            "warranty": "1年全球保固",
+            "stock": 30
+        },
+        {
+            "id": "P003",
+            "name": "Sony WH-1000XM5",
+            "category": "耳機",
+            "price": 12900,
+            "specs": {
+                "noise_cancellation": "主動式降噪",
+                "battery_life": "30小時",
+                "bluetooth": "5.2",
+                "weight": "250g",
+                "features": ["LDAC", "DSEE Extreme", "360 Reality Audio"]
+            },
+            "description": "Sony WH-1000XM5 無線降噪耳機，提供頂級的降噪效果和音質表現。",
+            "warranty": "2年保固",
+            "stock": 100
+        }
+    ]
+} 
