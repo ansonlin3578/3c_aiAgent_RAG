@@ -1,119 +1,104 @@
-# 3C產品智能助手
+# 3C 產品電商 AI 助手
 
-這是一個基於 LangChain 和 FastAPI 開發的智能產品諮詢系統，能夠回答用戶關於3C產品的問題，提供產品搜索和推薦功能。
+這是一個基於 RAG (Retrieval-Augmented Generation) 技術的 3C 產品電商 AI 助手，能夠智能地回答用戶關於產品規格、庫存、價格等問題。
 
 ## 功能特點
 
-- 產品搜索：根據產品名稱、類別或規格進行搜索
-- 產品推薦：根據用戶需求推薦合適的產品
-- 即時對話：支持自然語言交互
-- 本地模型：使用 Ollama 運行本地模型，無需 API 密鑰
+- 智能產品搜索：使用語意搜索技術，能夠理解用戶的自然語言查詢
+- 多語言支持：使用多語言模型，支持中文和英文查詢
+- 精確的規格查詢：能夠準確返回產品的完整規格信息
+- 庫存查詢：支持即時查詢產品庫存狀態
+- 智能錯誤處理：當查詢不存在的產品時，會給出友好的提示
 
-## 系統要求
+## 技術架構
 
-- Python 3.8+
-- Ollama（用於運行本地模型）
+- 後端：Python FastAPI
+- 向量數據庫：Chroma
+- 嵌入模型：paraphrase-multilingual-MiniLM-L12-v2
+- 前端：HTML + JavaScript
 
 ## 安裝步驟
 
-1. 克隆代碼庫：
+1. 克隆專案：
 ```bash
 git clone [repository_url]
-cd [repository_name]
+cd [project_directory]
 ```
 
-2. 安裝 Python 依賴：
+2. 安裝依賴：
 ```bash
 pip install -r requirements.txt
 ```
 
-3. 安裝 Ollama：
-   - 訪問 [Ollama 官網](https://ollama.ai/) 下載並安裝
-   - 下載 Mistral 模型：
-```bash
-ollama pull mistral
-```
-
-4. 配置環境變量：
-   - 複製 `.env.example` 到 `.env`
-   - 根據需要修改配置
-
-## 運行系統
-
-1. 啟動服務器：
+3. 啟動服務：
 ```bash
 python run.py
 ```
 
-2. 訪問 Web 界面：
-   - 打開瀏覽器訪問 `http://localhost:8000/static/index.html`
+4. 訪問應用：
+打開瀏覽器訪問 `http://localhost:8000`
 
-## 使用示例
+## 使用範例
 
-1. 產品搜索：
-   - "列出所有手機"
-   - "有哪些耳機產品？"
-   - "iPhone 15 Pro 的詳細信息是什麼？"
-
-2. 產品推薦：
-   - "請推薦一款適合辦公的筆記本電腦"
-   - "我需要一台性價比高的耳機"
-   - "推薦一款拍照好的手機"
-
-## 系統架構
-
+### 1. 規格查詢
 ```
-app/
-├── agents/          # 智能代理
-│   ├── base_agent.py
-│   └── product_agent.py
-├── data/           # 數據文件
-│   └── documents/
-│       └── products.json
-├── static/         # 靜態文件
-│   └── index.html
-├── tools/          # 工具函數
-│   └── product_tools.py
-└── main.py         # 主程序
+提示：MacBook Pro 規格
+回答：
+MacBook Pro 的規格如下：
+
+處理器: M3 Pro
+記憶體: 16GB
+儲存空間: 512GB SSD
+顯示器: 14.2吋 Liquid Retina XDR
+電池: 70瓦時
+連接埠: HDMI、SDXC、MagSafe 3、Thunderbolt 4
 ```
 
-## 開發指南
+### 2. 庫存查詢
+```
+提示：MacBook Pro 目前庫存還有多少台？
+回答：MacBook Pro 目前庫存還有 50 台
+```
 
-1. 添加新產品：
-   - 在 `app/data/documents/products.json` 中添加產品信息
+### 3. 價格查詢
+```
+提示：MacBook Pro 的價格是多少？
+回答：產品名稱: MacBook Pro 類別: 筆記型電腦 價格: 59900元 庫存: 50台
+```
 
-2. 自定義模型：
-   - 修改 `.env` 文件中的 `MODEL_NAME` 參數
-   - 可選模型：mistral, llama2, codellama, neural-chat
+### 4. 不存在的產品查詢
+```
+提示：Nintendo Switch OLED 的價格是多少？
+回答：目前商店中沒有此商品
+```
 
-3. 擴展功能：
-   - 在 `app/tools/` 中添加新的工具
-   - 在 `app/agents/` 中創建新的代理
+## 查詢技巧
 
-## 常見問題
+1. 規格查詢：
+   - 使用"規格"關鍵字可以獲取完整的產品規格信息
+   - 例如："MacBook Pro 規格"、"iPhone 15 Pro 規格"
 
-1. 模型加載失敗：
-   - 確保 Ollama 已正確安裝
-   - 檢查模型是否已下載
-   - 查看服務器日誌
+2. 庫存查詢：
+   - 使用"庫存"、"剩下"、"還有"等關鍵字
+   - 例如："MacBook Pro 目前庫存還有多少台？"
 
-2. 搜索結果不準確：
-   - 檢查產品數據格式
-   - 確認搜索關鍵詞
-   - 查看工具日誌
+3. 價格查詢：
+   - 直接詢問產品價格
+   - 例如："MacBook Pro 的價格是多少？"
 
-## 貢獻指南
+## 注意事項
 
-1. Fork 項目
-2. 創建特性分支
-3. 提交更改
-4. 推送到分支
-5. 創建 Pull Request
+1. 確保產品名稱輸入正確，系統會進行精確匹配
+2. 查詢不存在的產品時，系統會返回"目前商店中沒有此商品"
+3. 系統使用語意搜索，可以理解相似的表達方式
+4. 支持中文和英文查詢
 
-## 許可證
+## 開發者信息
 
-MIT License
+- 作者：[Your Name]
+- 版本：1.0.0
+- 最後更新：2024-03-21
 
-## 聯繫方式
+## 授權協議
 
-如有問題或建議，請提交 Issue 或 Pull Request。 
+MIT License 
