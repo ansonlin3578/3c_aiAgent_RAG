@@ -142,6 +142,13 @@ class ProductService:
                             "stock": product["stock"]
                         }
                     }]
+            # 如果找不到產品，返回提示信息
+            return [{
+                "content": "目前商店中沒有此商品",
+                "metadata": {
+                    "type": "not_found"
+                }
+            }]
 
         # 檢查是否為規格查詢
         if "規格" in query:
@@ -159,15 +166,38 @@ class ProductService:
                             "type": "specs"
                         }
                     }]
+            # 如果找不到產品，返回提示信息
+            return [{
+                "content": "目前商店中沒有此商品",
+                "metadata": {
+                    "type": "not_found"
+                }
+            }]
 
         # 執行相似度搜索
         docs = self.vector_store.similarity_search_with_score(query, k=k)
+        
+        # 如果沒有找到任何相關文檔，返回提示信息
+        if not docs:
+            return [{
+                "content": "目前商店中沒有此商品",
+                "metadata": {
+                    "type": "not_found"
+                }
+            }]
+
+        # 設置相似度閾值（0.7 是一個較高的閾值，可以根據需要調整）
+        SIMILARITY_THRESHOLD = 0.7
         
         # 格式化結果並去重
         seen_products = set()
         results = []
         
         for doc, score in docs:
+            # 檢查相似度是否達到閾值
+            if score > SIMILARITY_THRESHOLD:
+                continue
+                
             product_id = doc.metadata["id"]
             if product_id not in seen_products:
                 seen_products.add(product_id)
@@ -190,6 +220,15 @@ class ProductService:
                         "metadata": doc.metadata,
                         "relevance_score": score
                     })
+        
+        # 如果沒有找到任何符合閾值的結果，返回提示信息
+        if not results:
+            return [{
+                "content": "目前商店中沒有此商品",
+                "metadata": {
+                    "type": "not_found"
+                }
+            }]
         
         return results
 
