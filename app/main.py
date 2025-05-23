@@ -3,7 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, List
 import json
 import logging
+import os
+from dotenv import load_dotenv
 from .agents.product_agent import ProductAgent
+from app.api.endpoints import products
+
+# 加載環境變量
+load_dotenv()
 
 # 配置日誌
 logging.basicConfig(level=logging.INFO)
@@ -18,6 +24,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # 存儲WebSocket連接
@@ -26,9 +33,14 @@ class ConnectionManager:
         self.active_connections: Dict[str, WebSocket] = {}
     
     async def connect(self, websocket: WebSocket, client_id: str):
-        await websocket.accept()
-        self.active_connections[client_id] = websocket
-        logger.info(f"Client {client_id} connected")
+        logger.info(f"Attempting to connect client {client_id}")
+        try:
+            await websocket.accept()
+            self.active_connections[client_id] = websocket
+            logger.info(f"Client {client_id} connected successfully")
+        except Exception as e:
+            logger.error(f"Failed to connect client {client_id}: {str(e)}")
+            raise
     
     def disconnect(self, client_id: str):
         if client_id in self.active_connections:
@@ -47,6 +59,9 @@ manager = ConnectionManager()
 # 創建Agent實例
 product_agent = ProductAgent()
 logger.info("ProductAgent initialized")
+
+# 包含路由
+app.include_router(products.router, prefix="/api/products", tags=["products"])
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):

@@ -73,6 +73,11 @@
             font-size: 14px;
             margin-top: 10px;
         }
+        .loading {
+            display: none;
+            margin-top: 10px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -83,71 +88,47 @@
             <input type="text" id="userInput" placeholder="請輸入您的問題..." />
             <button onclick="sendMessage()">發送</button>
         </div>
-        <div class="status" id="status">連接狀態: 未連接</div>
+        <div class="loading" id="loading">正在搜索...</div>
         <div class="error" id="error"></div>
     </div>
 
     <script>
-        let ws = null;
-        const clientId = 'user_' + Math.random().toString(36).substr(2, 9);
-        
-        function connect() {
-            try {
-                ws = new WebSocket(`ws://localhost:8000/ws/${clientId}`);
-                
-                ws.onopen = () => {
-                    document.getElementById('status').textContent = '連接狀態: 已連接';
-                    addMessage('系統', '已連接到AI助手，請開始對話。', 'bot');
-                    document.getElementById('error').textContent = '';
-                };
-                
-                ws.onclose = (event) => {
-                    document.getElementById('status').textContent = '連接狀態: 已斷開';
-                    document.getElementById('error').textContent = `連接已關閉: ${event.code} ${event.reason}`;
-                    setTimeout(connect, 1000);
-                };
-                
-                ws.onerror = (error) => {
-                    console.error('WebSocket錯誤:', error);
-                    document.getElementById('error').textContent = 'WebSocket連接錯誤';
-                };
-                
-                ws.onmessage = (event) => {
-                    console.log('收到消息:', event.data);
-                    try {
-                        const response = JSON.parse(event.data);
-                        if (response.type === 'response') {
-                            if (response.status === 'success') {
-                                addMessage('AI助手', response.content, 'bot');
-                            } else {
-                                addMessage('系統', `錯誤: ${response.error}`, 'bot');
-                            }
-                        }
-                    } catch (e) {
-                        console.error('解析消息錯誤:', e);
-                        document.getElementById('error').textContent = '解析消息時發生錯誤';
-                    }
-                };
-            } catch (error) {
-                console.error('創建WebSocket連接錯誤:', error);
-                document.getElementById('error').textContent = '創建WebSocket連接時發生錯誤';
-            }
-        }
-        
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('userInput');
             const message = input.value.trim();
             
-            if (message && ws && ws.readyState === WebSocket.OPEN) {
-                console.log('發送消息:', message);
-                addMessage('我', message, 'user');
-                ws.send(JSON.stringify({
-                    type: 'chat',
-                    content: message
-                }));
-                input.value = '';
-            } else {
-                document.getElementById('error').textContent = '無法發送消息：WebSocket未連接';
+            if (!message) return;
+
+            // 顯示用戶消息
+            addMessage('我', message, 'user');
+            input.value = '';
+
+            // 顯示加載狀態
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'block';
+
+            try {
+                // 發送 HTTP 請求到 RAG API
+                const response = await fetch(`/api/products/search?query=${encodeURIComponent(message)}`);
+                const data = await response.json();
+
+                // 處理響應
+                if (response.ok) {
+                    if (data.length > 0) {
+                        // 顯示第一個結果的內容
+                        addMessage('AI助手', data[0].content, 'bot');
+                    } else {
+                        addMessage('AI助手', '抱歉，沒有找到相關信息。', 'bot');
+                    }
+                } else {
+                    throw new Error(data.detail || '搜索失敗');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('系統', `錯誤: ${error.message}`, 'bot');
+            } finally {
+                // 隱藏加載狀態
+                loadingDiv.style.display = 'none';
             }
         }
         
@@ -166,9 +147,6 @@
                 sendMessage();
             }
         });
-        
-        // 初始連接
-        connect();
     </script>
 </body>
 </html> 
