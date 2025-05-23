@@ -36,7 +36,7 @@ python run.py
 ```
 
 4. 訪問應用：
-打開瀏覽器訪問 `http://localhost:8000`
+打開瀏覽器訪問 `http://localhost:8000/static/index.html`
 
 ## 使用範例
 
